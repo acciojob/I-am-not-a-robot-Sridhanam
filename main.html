@@ -1,18 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>I'm not a robot</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <main>
-      <!-- solution start -->
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>I'm not a robot</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .selected {
+      border: 3px solid red;
+    }
+    #image-container img {
+      width: 100px;
+      height: 100px;
+      margin: 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h3 id="h">Please click on the identical tiles to verify that you are not a robot.</h3>
+    <div id="image-container" class="flex">
+      <!-- Images will be dynamically added here -->
+    </div>
+    <p id="para" style="display: none;"></p>
+    <button id="reset" style="display: none;">Reset</button>
+    <button id="verify" style="display: none;">Verify</button>
+  </main>
+  
+  <script>
+    const images = [
+      'https://picsum.photos/id/237/200/300',
+      'https://picsum.photos/seed/picsum/200/300',
+      'https://picsum.photos/200/300?grayscale', 
+      'https://picsum.photos/200/300/', 
+      'https://picsum.photos/id/237/200/300'
+    ];
+
+    function generateImages(){
+      // Choose one image to duplicate
+      let selectedImageIndex = Math.floor(Math.random() * images.length);
+      let selectedImage = images[selectedImageIndex];
       
-      <!-- solution end -->
-    </main>
-    <script src="./script.js"></script>
-  </body>
+      // Create an array of 6 images (5 unique and 1 repeated)
+      let allImages = [...images];
+      allImages.push(selectedImage); // Add duplicate image
+      
+      // Shuffle the images
+      let shuffledImages = allImages.sort(() => 0.5 - Math.random());
+      
+      // Set the class names for each image
+      const imageContainer = document.getElementById('image-container');
+      imageContainer.innerHTML = '';
+      shuffledImages.forEach((imgSrc, index) => {
+        const img = document.createElement('img');
+        img.src = imgSrc;
+        img.className = 'img' + (index + 1); // Class names img1, img2, etc.
+        img.dataset.index = index;
+        img.addEventListener('click', handleImageClick);
+        imageContainer.appendChild(img);
+      });
+    }
+
+    let firstClick = null;
+    let secondClick = null;
+
+    function handleImageClick(event){
+      const clickedImage = event.target;
+      
+      // Prevent double-clicking on the same image
+      if(firstClick === clickedImage || secondClick === clickedImage) return;
+
+      document.getElementById('reset').style.display = 'block';
+
+      if(!firstClick) {
+        firstClick = clickedImage;
+        clickedImage.classList.add('selected');
+      } else if(!secondClick) {
+        secondClick = clickedImage;
+        clickedImage.classList.add('selected');
+        document.getElementById('verify').style.display = 'block';
+      }
+    }
+
+    function reset(){
+      firstClick = null;
+      secondClick = null;
+      document.getElementById('reset').style.display = 'none';
+      document.getElementById('verify').style.display = 'none';
+      document.getElementById('para').style.display = 'none';
+      document.getElementById('image-container').innerHTML = '';
+      generateImages();
+    }
+
+    function verify(){
+      if(firstClick && secondClick){
+        const para = document.getElementById('para');
+        if(firstClick.src === secondClick.src){
+          para.innerHTML = 'You are a human. Congratulations!';
+        } else {
+          para.innerHTML = 'We can\'t verify you as a human. You selected the non-identical tiles.';
+        }
+
+        para.style.display = 'block';
+        document.getElementById('verify').style.display = 'none';
+      }
+    }
+
+    document.getElementById('reset').addEventListener('click', reset);
+    document.getElementById('verify').addEventListener('click', verify);
+
+    // Generate images when the page loads
+    generateImages();
+  </script>
+</body>
 </html>
